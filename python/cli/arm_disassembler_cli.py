@@ -18,10 +18,14 @@ def main():
     while True:
         try:
             instr_str = input('> ')
+            
+            if not instr_str:
+                continue
+            
             if instr_str.lower() in ('exit', 'quit'):
                 break
             
-            instr_value = parse_instruction(instr_str)
+            instr_value = parse_instruction(instr_str) & 0xFFFFFFFF
             instr = RawArmInstruction(instr_value)
             result = disassembler.disassemble(instr)
             print(f'{instr_value:08X}: {result}')
