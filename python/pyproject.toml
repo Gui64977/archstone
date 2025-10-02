@@ -2,11 +2,10 @@
 name = "archstone"
 version = "0.1.0"
 description = "An assembler and disassembler for the ARMv4T instruction set"
-readme = "README.md"
 authors = [
   { name = "Gui64977" }
 ]
-license = { text = "GPL-3.0" }
+license = "GPL-3.0-or-later"
 requires-python = ">=3.9"
 keywords = ["arm", "armv4t", "assembler", "disassembler"]
 
@@ -15,8 +14,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "License :: OSI Approved :: GNU General Public License v3 (GPL-3.0)",
-  "Operating System :: OS Independent",
+  "Operating System :: OS Independent"
 ]
 
 [project.urls]
@@ -26,3 +24,6 @@ Repository = "https://github.com/Gui64977/archstone"
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]

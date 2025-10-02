@@ -34,7 +34,7 @@ Based on *ARM ARM DDI 0100B*.
 
 ---
 
-## 📦 Installation & Usage
+## 📦 Installation & Usage (Python)
 
 ```bash
 # Clone the repository
