@@ -64,10 +64,10 @@ class Armv4TDisassembler:
     
     def disassemble(self, instr: RawArmInstruction, lowerCaseOutput: bool = False) -> str:
         decoder = self.get_decoder(instr)
-        if decoder(instr):
-            result = decoder(instr)
-        else:
+        if decoder is None:
             result = 'UNKNOWN'
+        else:
+            result = decoder(instr)
         
         return result.lower() if lowerCaseOutput else result
     
