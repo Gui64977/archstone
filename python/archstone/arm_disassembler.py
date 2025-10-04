@@ -35,7 +35,7 @@ class Armv4TDisassembler:
     ]
     
     def get_decoder(self, instr: RawArmInstruction):
-        PATTERNS = [ # (mask, expected_value, handler)
+        PATTERNS = [ # (mask, expected_value, decoder)
             (0x0F000000, 0x0F000000, self.disassemble_software_interrupt),
             (0x0FFFFFF0, 0x012FFF10, self.disassemble_branch_exchange),
             (0x0E000000, 0x0A000000, self.disassemble_branch_and_branch_with_link),
@@ -52,10 +52,10 @@ class Armv4TDisassembler:
             (0x0C000000, 0x00000000, self.disassemble_data_processing)
         ]
         
-        # Returns the function (handler) matching the instruction pattern, or None if no match
-        for (mask, expected_value, handler) in PATTERNS:
+        # Returns the function (decoder) matching the instruction pattern, or None if no match
+        for (mask, expected_value, decoder) in PATTERNS:
             if instr.value & mask == expected_value:
-                return handler
+                return decoder
     
     def get_cond(self, instr: RawArmInstruction) -> str:
         cond_code = self.CONDITION_CODES[instr.get_bits(28, 31)]
