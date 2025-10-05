@@ -1,7 +1,7 @@
 # ArchStone
 
 **ArchStone** is an assembler and disassembler for the **ARMv4T** instruction set.  
-Based on *ARM ARM DDI 0100B*.  
+Based on *ARM ARM DDI 0100B* (and *ARM ARM DDI 0100D*).  
 
 ![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Python: 3.9+](https://img.shields.io/badge/python-3.9%2B-brightgreen)
@@ -13,7 +13,7 @@ Based on *ARM ARM DDI 0100B*.
 - ⏳ **ARM assembler**: not implemented yet  
 - ✅ **ARM disassembler**: done (still in development)  
 - ⏳ **Thumb-1 assembler**: not implemented yet  
-- ⏳ **Thumb-1 disassembler**: in early development  
+- 🐞 **Thumb-1 disassembler**: in bug fix phase  
 
 ---
 
@@ -49,13 +49,13 @@ pip install -e .
 
 ### ▶️ Run the CLI disassembler
 
-First go to `archstone/python` directory and run the following command:  
+From `archstone/python` directory, run the following command:  
 
 ```bash
 python cli/arm_disassembler_cli.py
 ```
 
-You can type instructions in hexadecimal **(default)**, or with prefixes `0x` (hex), `0o` (octal), `0b` (binary).  
+You can type instructions in hexadecimal **(default)**, or with prefixes `0x` (hex), `0o` (octal), and `0b` (binary).  
 Type `exit` or `quit`, or press `CTRL+C` to leave the CLI.  
 
 ### ▶️ Example how to use the disassembler
