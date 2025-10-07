@@ -10,10 +10,10 @@ Based on *ARM ARM DDI 0100B* (and *ARM ARM DDI 0100D*).
 
 ## 🚧 Current Status
 
-- ⏳ **ARM assembler**: not implemented yet  
+- ⏳ **ARM assembler**: not yet implemented  
 - ✅ **ARM disassembler**: done (still in development)  
-- ⏳ **Thumb-1 assembler**: not implemented yet  
-- 🐞 **Thumb-1 disassembler**: in bug fix phase  
+- ⏳ **Thumb-1 assembler**: not yet implemented   
+- ✅ **Thumb-1 disassembler**: done (still in development and `BL` has not been implemented)   
 
 ---
 
@@ -21,7 +21,6 @@ Based on *ARM ARM DDI 0100B* (and *ARM ARM DDI 0100D*).
 
 - Add an **ARM assembler**  
 - Add a **Thumb-1 assembler**  
-- Expand the **Thumb-1 disassembler**  
 - Provide a **full JavaScript port**  
 - Improve **documentation and usage examples**  
 
@@ -35,6 +34,8 @@ Based on *ARM ARM DDI 0100B* (and *ARM ARM DDI 0100D*).
 ---
 
 ## 📦 Installation & Usage (Python)
+
+### ▶️ Install the Python module
 
 ```bash
 # Clone the repository
@@ -51,8 +52,16 @@ pip install -e .
 
 From `archstone/python` directory, run the following command:  
 
+**ARM disassembler CLI**:  
+
 ```bash
 python cli/arm_disassembler_cli.py
+```
+
+**Thumb-1 disassembler CLI**:  
+
+```bash
+python cli/thumb_disassembler_cli.py
 ```
 
 You can type instructions in hexadecimal **(default)**, or with prefixes `0x` (hex), `0o` (octal), and `0b` (binary).  
@@ -60,12 +69,24 @@ Type `exit` or `quit`, or press `CTRL+C` to leave the CLI.
 
 ### ▶️ Example how to use the disassembler
 
+**ARM disassembler**:
+
 ```python
 from archstone import RawArmInstruction, Armv4TDisassembler
 
 disassembler = Armv4TDisassembler()
 instr = RawArmInstruction(0xE8BB0002)  # LDMIA r11!, {r1}
 print(disassembler.disassemble(instr)) # Output: LDMIA r11!, {r1}
+```
+
+**Thumb-1 disassembler**:
+
+```python
+from archstone import RawThumbInstruction, Thumb1Disassembler
+
+disassembler = Thumb1Disassembler()
+instr = RawThumbInstruction(0x4770)    # BX r14
+print(disassembler.disassemble(instr)) # Output: BX r14
 ```
 
 ---

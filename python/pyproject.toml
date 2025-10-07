@@ -1,13 +1,13 @@
 [project]
 name = "archstone"
-version = "0.1.0"
+version = "0.1.1"
 description = "An assembler and disassembler for the ARMv4T instruction set"
 authors = [
   { name = "Gui64977" }
 ]
 license = "GPL-3.0-or-later"
 requires-python = ">=3.9"
-keywords = ["arm", "armv4t", "assembler", "disassembler"]
+keywords = ["arm", "armv4t", "thumb1", "assembler", "disassembler"]
 
 classifiers = [
   "Programming Language :: Python :: 3.9",

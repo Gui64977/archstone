@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 class RawArmInstruction:
     def __init__(self, value: int) -> None:
-        self.value = value & 0xFFFFFFFF # Should be big-endian
+        self.value = value & 0xFFFFFFFF # Must be big-endian
     
     def get_bit(self, n: int) -> int:
         return (self.value >> n) & 1
@@ -29,11 +29,6 @@ class RawArmInstruction:
 
 
 class Armv4TDisassembler:
-    CONDITION_CODES = [
-        'EQ', 'NE', 'CS', 'CC', 'MI', 'PL', 'VS', 'VC',
-        'HI', 'LS', 'GE', 'LT', 'GT', 'LE', 'AL', 'NV' # 'NV' cond may be ignored in the future
-    ]
-    
     def get_decoder(self, instr: RawArmInstruction):
         PATTERNS = [ # (mask, expected_value, decoder)
             (0x0F000000, 0x0F000000, self.disassemble_software_interrupt),
@@ -49,7 +44,7 @@ class Armv4TDisassembler:
             (0x0FB000F0, 0x01000090, self.disassemble_swap),
             (0x0D900000, 0x01000000, self.disassemble_move_from_or_to_status_reg),
             (0x0E000090, 0x00000090, self.disassemble_load_or_store_halfword_or_signed_byte),
-            (0x0C000000, 0x00000000, self.disassemble_data_processing)
+            (0x0C000000, 0x00000000, self.disassemble_data_processing),
         ]
         
         # Returns the function (decoder) matching the instruction pattern, or None if no match
@@ -58,6 +53,11 @@ class Armv4TDisassembler:
                 return decoder
     
     def get_cond(self, instr: RawArmInstruction) -> str:
+        CONDITION_CODES = [
+            'EQ', 'NE', 'CS', 'CC', 'MI', 'PL', 'VS', 'VC',
+            'HI', 'LS', 'GE', 'LT', 'GT', 'LE', 'AL', 'NV' # 'NV' cond may be ignored in the future
+        ]
+        
         cond_code = self.CONDITION_CODES[instr.get_bits(28, 31)]
         
         return '' if cond_code == 'AL' else cond_code
@@ -82,10 +82,10 @@ class Armv4TDisassembler:
             return f'#0x{rotated:x}'
         
         # Register operand
-        rm = instr.get_bits(0, 3)
-        shift = instr.get_bits(5, 6)
         shift_imm = instr.get_bits(7, 11) # In ARM ARM DDI 0100B page 3-84 this appears as 'Rs' instead of 'shift_imm'
+        shift = instr.get_bits(5, 6)
         shift_name = ['LSL', 'LSR', 'ASR', 'ROR'][shift]
+        rm = instr.get_bits(0, 3)
         
         if shift_name == 'LSL' and shift_imm == 0:
             return f'r{rm}'
@@ -99,7 +99,8 @@ class Armv4TDisassembler:
             rs = instr.get_bits(8, 11)
             return f'r{rm}, {shift_name} r{rs}'
         
-        return f'r{rm}, {shift_name} #0x{shift_imm:x}'
+        # Immediate shift
+        return f'r{rm}, {shift_name} #{shift_imm}'
     
     def format_addressing_mode2(self, instr: RawArmInstruction) -> str:
         '''Format Load and Store Word or Unsigned Byte Addressing Modes.'''
@@ -112,15 +113,15 @@ class Armv4TDisassembler:
             if p:
                 return f"[r{rn}, #{sign}0x{offset:x}]{'!' if w else ''}"
             else:
-                return f"[r{rn}], #{sign}0x{offset:x}"
+                return f'[r{rn}], #{sign}0x{offset:x}'
         
         # Register offset
         if instr.get_bit(4): # SBZ
             return None
         
-        rm = instr.get_bits(0, 3)
-        shift = instr.get_bits(5, 6)
         shift_imm = instr.get_bits(7, 11)
+        shift = instr.get_bits(5, 6)
+        rm = instr.get_bits(0, 3)
         shift_name = ['LSL', 'LSR', 'ASR', 'ROR'][shift]
         
         if shift_name == 'LSL' and shift_imm == 0:
@@ -136,9 +137,9 @@ class Armv4TDisassembler:
                 return f'[r{rn}], {sign}r{rm}, RRX'
         
         if p:
-            return f"[r{rn}, {sign}r{rm}, {shift_name} #0x{shift_imm:x}]{'!' if w else ''}"
+            return f"[r{rn}, {sign}r{rm}, {shift_name} #{shift_imm}]{'!' if w else ''}"
         else:
-            return f'[r{rn}], {sign}r{rm}, {shift_name} #0x{shift_imm:x}'
+            return f'[r{rn}], {sign}r{rm}, {shift_name} #{shift_imm}'
     
     def format_addressing_mode3(self, instr: RawArmInstruction) -> str:
         '''Format Load and Store Halfword or Load Signed Byte Addressing Modes.'''
@@ -192,6 +193,7 @@ class Armv4TDisassembler:
     def disassemble_software_interrupt(self, instr: RawArmInstruction) -> str:
         '''Disassemble Software interrupt instructions.'''
         swi_number = instr.get_bits(0, 23)
+        
         return f'SWI{self.get_cond(instr)} #0x{swi_number:x}'
     
     def disassemble_branch_exchange(self, instr: RawArmInstruction) -> str:
@@ -200,6 +202,7 @@ class Armv4TDisassembler:
             return None
         
         rm = instr.get_bits(0, 3)
+        
         return f'BX{self.get_cond(instr)} r{rm}'
     
     def disassemble_branch_and_branch_with_link(self, instr: RawArmInstruction) -> str:
@@ -286,10 +289,12 @@ class Armv4TDisassembler:
         
         if a: # MLA
             rn = instr.get_bits(12, 15)
+            
             return f"MLA{'S' if s else ''}{self.get_cond(instr)} r{rd}, r{rm}, r{rs}, r{rn}"
         else: # MUL
             if instr.get_bits(12, 15) != 0: # SBZ
                 return None
+            
             return f"MUL{'S' if s else ''}{self.get_cond(instr)} r{rd}, r{rm}, r{rs}"
     
     def disassemble_multiply_long(self, instr: RawArmInstruction) -> str:
@@ -359,6 +364,7 @@ class Armv4TDisassembler:
                 return f"MSR{self.get_cond(instr)} {'SPSR' if r else 'CPSR'}_{fields}, #0x{rotated_imm:x}"
             else: # Register
                 rm = instr.get_bits(0, 3)
+                
                 return f"MSR{self.get_cond(instr)} {'SPSR' if r else 'CPSR'}_{fields}, r{rm}"
     
     def disassemble_load_or_store_halfword_or_signed_byte(self, instr: RawArmInstruction) -> str:
@@ -375,6 +381,7 @@ class Armv4TDisassembler:
         else: # Store
             if instr.get_bits(5, 6) != 1: # Only STRH is valid
                 return None
+            
             return f'STRH{self.get_cond(instr)} r{rd}, {addressing_mode}'
     
     def disassemble_data_processing(self, instr: RawArmInstruction) -> str:
