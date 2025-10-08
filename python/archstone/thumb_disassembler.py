@@ -58,7 +58,9 @@ class Thumb1Disassembler:
     
     def disassemble(self, instr: RawThumbInstruction, lowerCaseOutput: bool = False) -> str:
         decoder = self.get_decoder(instr)
-        if decoder(instr) is None:
+        if decoder is None:
+            output = 'UNKNOWN'
+        elif decoder(instr) is None:
             output = 'UNKNOWN'
         else:
             output = decoder(instr)
