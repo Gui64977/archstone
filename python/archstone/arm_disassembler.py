@@ -58,7 +58,7 @@ class Armv4TDisassembler:
             'HI', 'LS', 'GE', 'LT', 'GT', 'LE', 'AL', 'NV' # 'NV' cond may be ignored in the future
         ]
         
-        cond_code = self.CONDITION_CODES[instr.get_bits(28, 31)]
+        cond_code = CONDITION_CODES[instr.get_bits(28, 31)]
         
         return '' if cond_code == 'AL' else cond_code
     

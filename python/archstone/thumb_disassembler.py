@@ -206,7 +206,7 @@ class Thumb1Disassembler:
             'HI', 'LS', 'GE', 'LT', 'GT', 'LE', 'AL', 'NV' # 'NV' cond may be ignored in the future
         ]
         
-        cond_code = self.CONDITION_CODES[instr.get_bits(8, 11)]
+        cond_code = CONDITION_CODES[instr.get_bits(8, 11)]
         cond = '' if cond_code == 'AL' else cond_code
         offset = instr.get_bits(0, 7)
         
