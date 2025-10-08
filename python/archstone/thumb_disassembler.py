@@ -58,12 +58,12 @@ class Thumb1Disassembler:
     
     def disassemble(self, instr: RawThumbInstruction, lowerCaseOutput: bool = False) -> str:
         decoder = self.get_decoder(instr)
-        if decoder is None:
-            result = 'UNKNOWN'
+        if decoder(instr) is None:
+            output = 'UNKNOWN'
         else:
-            result = decoder(instr)
+            output = decoder(instr)
         
-        return result.lower() if lowerCaseOutput else result
+        return output.lower() if lowerCaseOutput else output
     
     def disassemble_add_or_sub(self, instr: RawThumbInstruction) -> str:
         i = instr.get_bit(10)
