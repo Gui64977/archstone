@@ -28,7 +28,7 @@ class RawThumbInstruction:
         return (self.value >> start) & mask
 
 
-class Thumb1Disassembler:
+class Thumb1Disassembler: # For ARMv4T, but it's based on ARM ARM DDI 0100D (ARMv5 documentation) due to the inaccuracy of ARM ARM DDI 0100B (ARMv4 documentation)
     def get_decoder(self, instr: RawThumbInstruction):
         PATTERNS = [
             (0xF800, 0x1800, self.disassemble_add_or_sub),
@@ -90,7 +90,7 @@ class Thumb1Disassembler:
     
     def disassemble_add_or_sub_or_cmp_or_mov_imm(self, instr: RawThumbInstruction) -> str:
         opcode = instr.get_bits(11, 12)
-        mnem = ['MOVS', 'CMP', 'ADDS', 'SUBS'][opcode] # In ARM ARM DDI 0100B page 6-56 bit 11 of the instruction must be zero, not one
+        mnem = ['MOVS', 'CMP', 'ADDS', 'SUBS'][opcode]
         rd_rn = instr.get_bits(8, 10)
         imm = instr.get_bits(0, 7)
         
@@ -111,7 +111,7 @@ class Thumb1Disassembler:
     
     def disassemble_special_dp(self, instr: RawThumbInstruction) -> str:
         opcode = instr.get_bits(8, 9)
-        mnem = ['ADDS', 'CMP', 'MOVS', 'BX'][opcode]
+        mnem = ['ADD', 'CMP', 'MOV', 'BX'][opcode]
         h1 = instr.get_bit(7)
         h2 = instr.get_bit(6)
         rm = instr.get_bits(3, 5)
@@ -126,8 +126,8 @@ class Thumb1Disassembler:
         return f'{mnem} r{rd_rn+8 if h1 else rd_rn}, r{rm+8 if h2 else rm}'
     
     def disassemble_load_from_literal_pool(self, instr: RawThumbInstruction) -> str:
-        rd = instr.get_bits(8, 10) # In ARM ARM DDI 0100B page 6-44 this appears as 'Rn' instead of 'Rd'
-        offset = instr.get_bits(0, 7)
+        rd = instr.get_bits(8, 10)
+        offset = instr.get_bits(0, 7) * 4
         
         return f'LDR r{rd}, [r15, #0x{offset:x}]'
     
@@ -143,7 +143,7 @@ class Thumb1Disassembler:
     def disassemble_load_or_store_word_or_byte_imm_offset(self, instr: RawThumbInstruction) -> str:
         b = instr.get_bit(12)
         l = instr.get_bit(11)
-        imm = instr.get_bits(6, 10)
+        imm = instr.get_bits(6, 10) * (1 if b else 4)
         rn = instr.get_bits(3, 5)
         rd = instr.get_bits(0, 2)
         
@@ -153,13 +153,13 @@ class Thumb1Disassembler:
         l = instr.get_bit(11)
         imm = instr.get_bits(6, 10) * 2
         rn = instr.get_bits(3, 5)
-        rd = instr.get_bits(0, 2) # In ARM ARM DDI 0100B figure 6-1 (page 6-4) this appears to be from bit 1 to bit 2 (not from bit 0 to bit 2)
+        rd = instr.get_bits(0, 2)
         
         return f"{'LDR' if l else 'STR'}H r{rd}, [r{rn}, #0x{imm:x}]"
     
     def disassemble_load_or_store_to_or_from_stack(self, instr: RawThumbInstruction) -> str:
         l = instr.get_bit(11)
-        rd = instr.get_bits(8, 10) # In ARM ARM DDI 0100B page 6-45 this appears as 'Rn' instead of 'Rd'
+        rd = instr.get_bits(8, 10)
         offset = instr.get_bits(0, 7) * 4
         
         return f"{'LDR' if l else 'STR'} r{rd}, [r13, #0x{offset:x}]"
@@ -167,14 +167,15 @@ class Thumb1Disassembler:
     def disassemble_add_to_sp_or_pc(self, instr: RawThumbInstruction) -> str:
         sp = instr.get_bit(11)
         rd = instr.get_bits(8, 10)
-        imm = instr.get_bits(0, 7) # Multiplied by four in Thumb-2 or later?
+        imm = instr.get_bits(0, 7) * 4
         
-        return f"ADDS r{rd}, {'r13' if sp else 'r15'}, #0x{imm:x}"
+        return f"ADD r{rd}, {'r13' if sp else 'r15'}, #0x{imm:x}"
     
     def disassemble_adjust_sp(self, instr: RawThumbInstruction) -> str:
-        imm = instr.get_bits(0, 6)
+        op = instr.get_bit(7)
+        imm = instr.get_bits(0, 6) * 4
         
-        return f'ADDS r13, r13, #0x{imm:x}'
+        return f"{'SUB' if op else 'ADD'} r13, #0x{imm:x}"
     
     def disassemble_push_or_pop_reg_list(self, instr: RawThumbInstruction) -> str:
         l = instr.get_bit(11)
@@ -186,7 +187,8 @@ class Thumb1Disassembler:
         
         registers = [f'r{i}' for i in range(8) if reg_list & (1 << i)]
         
-        registers.append(f"{'r15' if l and r else ('r14' if r else '')}")
+        if r:
+            registers.append(f"{'r15' if l else 'r14'}")
         
         return f"{'POP' if l else 'PUSH'} {{{', '.join(registers)}}}"
     
@@ -200,7 +202,7 @@ class Thumb1Disassembler:
         
         registers = [f'r{i}' for i in range(8) if reg_list & (1 << i)]
         
-        return f"{'LDM' if l else 'STM'}IA r{rn}, {{{', '.join(registers)}}}"
+        return f"{'LDM' if l else 'STM'}IA r{rn}!, {{{', '.join(registers)}}}"
     
     def disassemble_conditional_branch(self, instr: RawThumbInstruction) -> str:
         CONDITION_CODES = [
@@ -210,9 +212,14 @@ class Thumb1Disassembler:
         
         cond_code = CONDITION_CODES[instr.get_bits(8, 11)]
         cond = '' if cond_code == 'AL' else cond_code
-        offset = instr.get_bits(0, 7)
+        imm = instr.get_bits(0, 7) << 1
         
-        return f'B{cond} #0x{offset:x}'
+        if imm & (1 << 8): # Sign-extend immediate
+            imm |= ~((1 << 9) - 1)
+        
+        imm = (imm + 4) & 0xFFFFFFFF
+        
+        return f'B{cond} #0x{imm:x}'
     
     def disassemble_software_interrupt(self, instr: RawThumbInstruction) -> str:
         imm = instr.get_bits(0, 7)
