@@ -12,15 +12,15 @@ Based on *ARM ARM DDI 0100B* (and *ARM ARM DDI 0100D*).
 
 - ⏳ **ARM assembler**: not yet implemented  
 - ✅ **ARM disassembler**: done (still in development)  
-- ⏳ **Thumb-1 assembler**: not yet implemented   
-- ✅ **Thumb-1 disassembler**: done (still in development and `BL` has not been implemented)   
+- ⏳ **Thumb assembler**: not yet implemented   
+- ✅ **Thumb disassembler**: done (still in development and `BL` has not been implemented)   
 
 ---
 
 ## 🚀 Roadmap
 
 - Add an **ARM assembler**  
-- Add a **Thumb-1 assembler**  
+- Add a **Thumb assembler**  
 - Provide a **full JavaScript port**  
 - Improve **documentation and usage examples**  
 
@@ -58,7 +58,7 @@ From `archstone/python` directory, run the following command:
 python cli/arm_disassembler_cli.py
 ```
 
-**Thumb-1 disassembler CLI**:  
+**Thumb disassembler CLI**:  
 
 ```bash
 python cli/thumb_disassembler_cli.py
@@ -79,7 +79,7 @@ instr = RawArmInstruction(0xE8BB0002)  # LDMIA r11!, {r1}
 print(disassembler.disassemble(instr)) # Output: LDMIA r11!, {r1}
 ```
 
-**Thumb-1 disassembler**:
+**Thumb disassembler**:
 
 ```python
 from archstone import RawThumbInstruction, Thumb1Disassembler
