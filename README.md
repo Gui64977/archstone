@@ -64,7 +64,7 @@ python cli/arm_disassembler_cli.py
 python cli/thumb_disassembler_cli.py
 ```
 
-You can type instructions in hexadecimal **(default)**, or with prefixes `0x` (hex), `0o` (octal), and `0b` (binary).  
+You can type instructions in hex **(default)**, or with prefixes `0x` (hex), `0o` (octal), and `0b` (binary).  
 Type `exit` or `quit`, or press `CTRL+C` to leave the CLI.  
 
 ### ▶️ Example how to use the disassembler

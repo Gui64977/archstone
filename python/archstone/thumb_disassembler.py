@@ -57,16 +57,10 @@ class Thumb1Disassembler: # For ARMv4T, but it's based on ARM ARM DDI 0100D (ARM
             if instr.value & mask == expected_value:
                 return decoder
     
-    def disassemble(self, instr: RawThumbInstruction, lower_case_output: bool = False) -> str:
+    def disassemble(self, instr: RawThumbInstruction) -> str:
         decoder = self.get_decoder(instr)
-        if decoder is None:
-            output = 'UNKNOWN'
-        elif decoder(instr) is None:
-            output = 'UNKNOWN'
-        else:
-            output = decoder(instr)
         
-        return output.lower() if lower_case_output else output
+        return (decoder(instr) if decoder else None) or 'UNKNOWN'
     
     def disassemble_add_or_sub_reg(self, instr: RawThumbInstruction) -> str:
         '''Disassemble Add/subtract register instructions.'''

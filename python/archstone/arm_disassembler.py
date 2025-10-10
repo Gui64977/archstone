@@ -64,14 +64,8 @@ class Armv4TDisassembler:
     
     def disassemble(self, instr: RawArmInstruction, lower_case_output: bool = False) -> str:
         decoder = self.get_decoder(instr)
-        if decoder is None:
-            output = 'UNKNOWN'
-        elif decoder(instr) is None:
-            output = 'UNKNOWN'
-        else:
-            output = decoder(instr)
         
-        return output.lower() if lower_case_output else output
+        return (decoder(instr) if decoder else None) or 'UNKNOWN'
     
     def format_addressing_mode1(self, instr: RawArmInstruction) -> str:
         '''Format Data-processing Operands.'''
