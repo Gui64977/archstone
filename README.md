@@ -50,7 +50,7 @@ pip install -e .
 
 ### ▶️ Run the CLI disassembler
 
-From `archstone/python` directory, run the following command:  
+From `archstone/python` directory, run one of the following commands:  
 
 **ARM disassembler CLI**:  
 
