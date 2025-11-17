@@ -1,6 +1,6 @@
 # ArchStone
 
-**ArchStone** is an assembler and disassembler for the **ARMv4T** instruction set.  
+**ArchStone** is an disassembler for the **ARMv4T** instruction set.  
 Based on *ARM ARM DDI 0100B* (and *ARM ARM DDI 0100D*).  
 
 ![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)
